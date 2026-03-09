@@ -94,6 +94,7 @@ pipeline {
                         -r zap-report.html \
                         -J zap-report.json \
                         -I
+                    ls -la $(pwd)/zap-report.*
                 '''
             }
             post {
