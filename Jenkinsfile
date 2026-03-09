@@ -9,6 +9,7 @@ pipeline {
 
     stages {
 
+        // ── STAGE 1 : Récupérer le code ──
         stage('Checkout') {
             steps {
                 echo 'Récupération du code source...'
@@ -16,25 +17,38 @@ pipeline {
             }
         }
 
+        // ── STAGE 2 : Builder l'image CI ──
+        stage('Build CI Image') {
+            steps {
+                echo 'Construction de l image CI...'
+                sh 'docker build -f Dockerfile.ci -t devsecops-ci:latest .'
+            }
+        }
+
+        // ── STAGE 3 : Build et tests unitaires ──
         stage('Build & Test') {
             agent {
-                docker { image 'python:3.11-slim' }
+                docker {
+                    image 'devsecops-ci:latest'
+                    reuseNode true
+                }
             }
             steps {
-                echo 'Installation des dépendances...'
-                sh 'pip install -r app/requirements.txt pytest'
                 echo 'Exécution des tests unitaires...'
                 sh 'pytest tests/ -v'
             }
         }
 
+        // ── STAGE 4 : SAST avec Bandit ──
         stage('SAST - Bandit Security Scan') {
             agent {
-                docker { image 'python:3.11-slim' }
+                docker {
+                    image 'devsecops-ci:latest'
+                    reuseNode true
+                }
             }
             steps {
                 echo 'Analyse de sécurité statique du code (SAST)...'
-                sh 'pip install bandit'
                 sh 'bandit -r app/ -f json -o bandit-report.json || true'
                 sh 'bandit -r app/ || true'
             }
@@ -46,13 +60,15 @@ pipeline {
             }
         }
 
+        // ── STAGE 5 : Build de l'image Docker de l'app ──
         stage('Docker Build') {
             steps {
-                echo 'Construction de l\'image Docker...'
+                echo 'Construction de l image Docker de l application...'
                 sh 'docker build -t devsecops-app:latest .'
             }
         }
 
+        // ── STAGE 6 : DAST avec OWASP ZAP ──
         stage('DAST - OWASP ZAP Pentest') {
             steps {
                 echo 'Lancement du pentest dynamique avec OWASP ZAP...'
