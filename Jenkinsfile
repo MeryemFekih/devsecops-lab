@@ -81,9 +81,13 @@ pipeline {
                     sleep 5
                 '''
                 sh '''
+                    chmod 775 $(pwd)
+                '''
+                sh '''
                     docker run --rm \
                         --network ${DOCKER_NET} \
-                        -v $(pwd):/zap/wrk \
+                        -v $(pwd):/zap/wrk/:rw \
+                        -u root \
                         ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py \
                         -t http://target-app:5000 \
