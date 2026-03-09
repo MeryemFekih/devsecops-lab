@@ -86,7 +86,7 @@ pipeline {
                 sh '''
                     docker run --rm \
                         --network ${DOCKER_NET} \
-                        -v $(pwd):/zap/wrk/:rw \
+                        -v ${WORKSPACE}:/zap/wrk/:rw \
                         -u root \
                         ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py \
@@ -94,7 +94,7 @@ pipeline {
                         -r zap-report.html \
                         -J zap-report.json \
                         -I
-                    ls -la $(pwd)/zap-report.*
+                    ls -la -la ${WORKSPACE}/
                 '''
             }
             post {
