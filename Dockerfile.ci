@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 RUN groupadd -r ciuser && useradd -r -g ciuser ciuser
 
-RUN pip install --no-cache-dir flask==2.3.3 bandit==1.7.5 pytest
+RUN pip install --no-cache-dir pbr flask==2.3.3 bandit==1.7.5 pytest
 
 USER ciuser
 
