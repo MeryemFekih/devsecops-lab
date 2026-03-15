@@ -51,6 +51,8 @@ pipeline {
                 echo 'Analyse de sécurité statique du code (SAST)...'
                 sh 'bandit -r app/ -f json -o bandit-report.json || true'
                 sh 'bandit -r app/ || true'
+                sh 'bandit -r app/ -ll'
+
             }
             post {
                 always {
@@ -65,6 +67,19 @@ pipeline {
             steps {
                 echo 'Construction de l image Docker de l application...'
                 sh 'docker build -t devsecops-app:latest .'
+            }
+            
+        }
+        stage('Container Scan - Trivy') {
+            steps {
+                echo 'Scan de l image Docker avec Trivy...'
+                sh '''
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest image \
+                        --exit-code 0 \
+                        devsecops-app:latest
+                '''
             }
         }
 
